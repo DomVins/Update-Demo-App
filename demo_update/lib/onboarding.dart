@@ -27,6 +27,7 @@ class _OnboardState extends State<Onboard> {
   int _total = 0, _received = 0;
   http.StreamedResponse? _response;
   final List<int> _bytes = [];
+  String apkUpdateUrl = '';
 
   void _incrementCounter() {
     setState(() {
@@ -45,6 +46,9 @@ class _OnboardState extends State<Onboard> {
   final DatabaseReference _versionReference =
       FirebaseDatabase.instance.ref().child('app_version');
 
+  final DatabaseReference _updateLocationReference =
+      FirebaseDatabase.instance.ref().child('url');
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +65,7 @@ class _OnboardState extends State<Onboard> {
         _executeFunctionWhenPermissionGranted();
         break; // Exit the loop when permission is granted
       }
-      await Future.delayed(Duration(seconds: 1)); // Check every 1 second
+      await Future.delayed(const Duration(seconds: 1)); // Check every 1 second
     }
   }
 
@@ -71,10 +75,10 @@ class _OnboardState extends State<Onboard> {
       if (status.isGranted && _downloadButtonClicked) {
         _downloadButtonClicked = false;
         print("Download event started");
-        _downloadAndInstallApp();
+        _downloadAndInstallApp(apkUpdateUrl);
         break; // Exit the loop when permission is granted
       }
-      await Future.delayed(Duration(seconds: 1)); // Check every 1 second
+      await Future.delayed(const Duration(seconds: 1)); // Check every 1 second
     }
   }
 
@@ -103,10 +107,20 @@ class _OnboardState extends State<Onboard> {
     }
   }
 
+  Future<String> getUpdateApkUrl() async {
+    final snapshot = await _updateLocationReference.get();
+    if (snapshot.exists) {
+      return snapshot.value.toString();
+    } else {
+      return 'No data available.';
+    }
+  }
+
   void _startUpdateListener() {
     _versionReference.onValue.listen((DatabaseEvent event) async {
       String latestVersion = await getLatestVersion();
       if (isUpdateAvailable(latestVersion)) {
+        apkUpdateUrl = await getUpdateApkUrl();
         _showUpdateDialog(latestVersion);
       }
     });
@@ -135,16 +149,18 @@ class _OnboardState extends State<Onboard> {
       body: SingleChildScrollView(
         child: downloading
             ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    const SizedBox(
+                      height: 100,
+                    ),
                     CircularProgressIndicator(value: progress),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text('Progress: ${(progress * 100).toStringAsFixed(2)}%'),
                   ],
                 ),
-            )
+              )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -228,7 +244,7 @@ class _OnboardState extends State<Onboard> {
                     if (hasPermission) {
                       print("Permission granted already");
                       print("Download event started");
-                      _downloadAndInstallApp();
+                      _downloadAndInstallApp(apkUpdateUrl);
                       _downloadButtonClicked = false;
                       //_downloadAndInstallApp();
                     } else {
@@ -327,7 +343,7 @@ class _OnboardState extends State<Onboard> {
     return status == PermissionStatus.granted;
   }
 
-  Future<void> _downloadAndInstallApp() async {
+  Future<void> _downloadAndInstallApp(String url) async {
     setState(() {
       downloading = true;
       _received = 0;
@@ -336,11 +352,7 @@ class _OnboardState extends State<Onboard> {
       _response = null;
     });
 
-    const apkUrl =
-        'https://firebasestorage.googleapis.com/v0/b/update-de78d.appspot.com/o/app-release.apk?alt=media&token=36d8763f-7ba9-4aa5-9100-2c11c5547c55';
-
-    _response =
-        await http.Client().send(http.Request('GET', Uri.parse(apkUrl)));
+    _response = await http.Client().send(http.Request('GET', Uri.parse(url)));
     _total = _response!.contentLength ?? 0;
 
     _response!.stream.listen((value) {
