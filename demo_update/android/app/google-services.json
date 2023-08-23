@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "274574135840",
+    "firebase_url": "https://update-de78d-default-rtdb.firebaseio.com",
+    "project_id": "update-de78d",
+    "storage_bucket": "update-de78d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274574135840:android:08b9c397fd6fea6fd86245",
+        "android_client_info": {
+          "package_name": "com.example.demo_update"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "274574135840-9l6gass0nbcdaslep5insk6pjp65ajv1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8qAOr7hZOekxzMnW2WBRSaHwqxNqPDW0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "274574135840-9l6gass0nbcdaslep5insk6pjp65ajv1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
